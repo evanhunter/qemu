@@ -16,7 +16,6 @@
 #include "hw/hw.h"
 #include "hw/boards.h"
 
-#if !defined(CONFIG_GNU_ARM_ECLIPSE)
 static void machine_none_init(MachineState *machine)
 {
 }
@@ -29,4 +28,3 @@ static void machine_none_machine_init(MachineClass *mc)
 }
 
 DEFINE_MACHINE("none", machine_none_machine_init)
-#endif /* !defined(CONFIG_GNU_ARM_ECLIPSE) */

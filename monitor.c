@@ -2946,7 +2946,6 @@ static void handle_hmp_command(Monitor *mon, const char *cmdline)
     QDict *qdict;
     const mon_cmd_t *cmd;
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 #if defined(CONFIG_VERBOSE)
         if (verbosity_level >= VERBOSITY_COMMON) {
             if (mon->flags == 0) {
@@ -2954,7 +2953,6 @@ static void handle_hmp_command(Monitor *mon, const char *cmdline)
             }
         }
 #endif
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
     cmd = monitor_parse_command(mon, &cmdline, mon->cmd_table);
     if (!cmd) {

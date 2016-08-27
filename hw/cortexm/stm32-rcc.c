@@ -19,6 +19,7 @@
 
 #include "hw/cortexm/stm32-rcc.h"
 #include "hw/cortexm/cortexm-helper.h"
+#include "qemu/timer.h"
 
 /**
  * This file implements the STM32 RCC (Reset and Clock Control).

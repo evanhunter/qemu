@@ -112,9 +112,7 @@ int gdbserver_start(int);
 int gdbserver_start(const char *port);
 #endif
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 int gdbserver_is_started(void);
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
 /**
  * gdb_has_xml:

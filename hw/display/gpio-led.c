@@ -21,6 +21,7 @@
 
 #include "hw/display/gpio-led.h"
 #include "hw/cortexm/cortexm-helper.h"
+#include "qemu/log.h"
 
 #if defined(CONFIG_VERBOSE)
 #include "verbosity.h"

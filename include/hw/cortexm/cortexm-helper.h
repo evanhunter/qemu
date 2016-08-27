@@ -23,6 +23,9 @@
 #include "qemu/osdep.h"
 
 #include "hw/qdev-properties.h"
+#include "qom/object_helper.h"
+#include "qapi/error.h"
+#include "qemu/log.h"
 
 /* ------------------------------------------------------------------------- */
 
@@ -60,14 +63,7 @@ void cortexm_bitband_init(Object *parent, const char *node_name,
 
 void *cm_cpu_arm_create(Object *parent, const char *cpu_model);
 
-Object *cm_object_new(Object *parent, const char *name, const char *type_name);
 Object *cm_object_new_mcu(MachineState *machine, const char *board_device_name);
-
-Object *cm_object_get_parent(Object *obj);
-bool cm_object_is_instance_of_typename(Object *obj, const char *type_name);
-Object *cm_object_get_child_by_name(Object *obj, const char *name);
-
-void cm_object_realize(Object *dev);
 
 void cm_device_reset(DeviceState *dev);
 
@@ -75,47 +71,66 @@ bool cm_device_parent_realize(DeviceState *dev, Error **errp,
         const char *type_name);
 bool cm_device_by_name_realize(DeviceState *dev, Error **errp,
         const char *type_name);
-void cm_device_parent_reset(DeviceState *dev, const char *type_name);
-void cm_device_by_name_reset(DeviceState *dev, const char *type_name);
-
-Object *cm_object_get_machine(void);
-
-void cm_object_property_set_int(Object *obj, int64_t value, const char *name);
-void cm_object_property_set_bool(Object *obj, bool value, const char *name);
-void cm_object_property_set_str(Object *obj, const char *value,
-        const char *name);
 
 Object *cm_container_get_peripheral(void);
 
-void cm_object_property_add_child(Object *parent, const char *node_name,
-        Object *child);
 
-ObjectProperty *
+static inline Object *cm_object_get_parent             (Object *obj)                                                     __attribute__ ((deprecated));
+static inline bool    cm_object_is_instance_of_typename(Object *obj, const char *type_name)                              __attribute__ ((deprecated));
+static inline Object *cm_object_get_child_by_name      (Object *obj, const char *name)                                   __attribute__ ((deprecated));
+static inline void    cm_object_realize                (Object *obj)                                                     __attribute__ ((deprecated));
+static inline Object *cm_object_new                    (Object *parent, const char* node_name, const char *type_name)    __attribute__ ((deprecated));
+static inline void    cm_object_property_add_child     (Object *obj, const char *node_name, Object *child)               __attribute__ ((deprecated));
+static inline void    cm_object_property_set_int       (Object *obj, int64_t     value, const char *name)                __attribute__ ((deprecated));
+static inline void    cm_object_property_set_bool      (Object *obj, bool        value, const char *name)                __attribute__ ((deprecated));
+static inline void    cm_object_property_set_str       (Object *obj, const char *value, const char *name)                __attribute__ ((deprecated));
+static inline void    cm_object_property_add_str       (Object *obj, const char *name, char          **v)                __attribute__ ((deprecated));
+static inline void    cm_object_property_add_const_str (Object *obj, const char *name, const char    **v)                __attribute__ ((deprecated));
+static inline void    cm_object_property_add_bool      (Object *obj, const char *name, const bool     *v)                __attribute__ ((deprecated));
+static inline void    cm_object_property_add_uint64    (Object *obj, const char *name, const uint64_t *v)                __attribute__ ((deprecated));
+static inline void    cm_object_property_add_uint32    (Object *obj, const char *name, const uint32_t *v)                __attribute__ ((deprecated));
+static inline void    cm_object_property_add_uint16    (Object *obj, const char *name, const uint16_t *v)                __attribute__ ((deprecated));
+static inline void    cm_object_property_add_uint8     (Object *obj, const char *name, const uint8_t  *v)                __attribute__ ((deprecated));
+static inline void    cm_object_property_add_int16     (Object *obj, const char *name, const int16_t  *v)                __attribute__ ((deprecated));
+static inline void    cm_device_parent_reset           (DeviceState *dev, const char *type_name)                         __attribute__ ((deprecated));
+static inline void    cm_device_by_name_reset          (DeviceState *dev, const char *type_name)                         __attribute__ ((deprecated));
+static inline Object *cm_object_get_machine            (void)                                                            __attribute__ ((deprecated));
+
+static inline ObjectProperty *
 cm_object_property_add(Object *obj, const char *name, const char *type,
         ObjectPropertyAccessor *get, ObjectPropertyAccessor *set,
-        ObjectPropertyRelease *release, void *opaque);
+        ObjectPropertyRelease *release, void *opaque)                    __attribute__ ((deprecated));
 
-void cm_object_property_add_str(Object *obj, const char *name, char **v);
+static inline Object *cm_object_get_parent             (Object *obj)                                                  { return object_get_parent(obj); }
+static inline bool    cm_object_is_instance_of_typename(Object *obj, const char *type_name)                           { return object_is_instance_of_typename(obj, type_name); }
+static inline Object *cm_object_get_child_by_name      (Object *obj, const char *name)                                { return object_get_child_by_name(obj, name); }
+static inline void    cm_object_realize                (Object *obj)                                                  { object_realize(obj); }
+static inline Object *cm_object_new                    (Object *parent, const char* node_name, const char *type_name) { return checked_object_new(parent, node_name, type_name, &error_fatal); }
+static inline void    cm_object_property_add_child     (Object *obj, const char *node_name, Object *child)            { object_property_add_child_descriptive(obj, node_name, child, &error_fatal); }
+static inline void    cm_object_property_set_int       (Object *obj, int64_t     value, const char *name)             { object_property_set_int_descriptive(  obj, value, name, NULL, &error_fatal); }
+static inline void    cm_object_property_set_bool      (Object *obj, bool        value, const char *name)             { object_property_set_bool_descriptive( obj, value, name, NULL, &error_fatal); }
+static inline void    cm_object_property_set_str       (Object *obj, const char *value, const char *name)             { object_property_set_str_descriptive(  obj, value, name, NULL, &error_fatal); }
+static inline void    cm_object_property_add_str       (Object *obj, const char *name, char          **v)             { object_property_add_str_simple(      obj, name, v, &error_fatal); }
+static inline void    cm_object_property_add_const_str (Object *obj, const char *name, const char    **v)             { object_property_add_const_str_simple(obj, name, v, &error_fatal); }
+static inline void    cm_object_property_add_bool      (Object *obj, const char *name, const bool     *v)             { object_property_add_bool_simple(     obj, name, v, &error_fatal); }
+static inline void    cm_object_property_add_uint64    (Object *obj, const char *name, const uint64_t *v)             { object_property_add_uint64_simple(   obj, name, v, &error_fatal); }
+static inline void    cm_object_property_add_uint32    (Object *obj, const char *name, const uint32_t *v)             { object_property_add_uint32_simple(   obj, name, v, &error_fatal); }
+static inline void    cm_object_property_add_uint16    (Object *obj, const char *name, const uint16_t *v)             { object_property_add_uint16_simple(   obj, name, v, &error_fatal); }
+static inline void    cm_object_property_add_uint8     (Object *obj, const char *name, const uint8_t  *v)             { object_property_add_uint8_simple(    obj, name, v, &error_fatal); }
+static inline void    cm_object_property_add_int16     (Object *obj, const char *name, const int16_t  *v)             { object_property_add_int16_simple(    obj, name, v, &error_fatal); }
+static inline void    cm_device_parent_reset           (DeviceState *dev, const char *type_name)                      { device_parent_reset( dev, type_name); }
+static inline void    cm_device_by_name_reset          (DeviceState *dev, const char *type_name)                      { device_by_name_reset(dev, type_name); }
+static inline Object *cm_object_get_machine            (void)                                                         { return qdev_get_machine(); }
 
-void cm_object_property_add_const_str(Object *obj, const char *name,
-        const char **v);
+static inline ObjectProperty *
+cm_object_property_add(Object *obj, const char *name, const char *type,
+        ObjectPropertyAccessor *get, ObjectPropertyAccessor *set,
+        ObjectPropertyRelease *release, void *opaque)
+{
+	return  object_property_add(obj, name, type, get, set, release, opaque, &error_fatal);
+}
 
-void cm_object_property_add_bool(Object *obj, const char *name, const bool *v);
 
-void cm_object_property_add_uint64(Object *obj, const char *name,
-        const uint64_t *v);
-
-void cm_object_property_add_uint32(Object *obj, const char *name,
-        const uint32_t *v);
-
-void cm_object_property_add_uint16(Object *obj, const char *name,
-        const uint16_t *v);
-
-void cm_object_property_add_uint8(Object *obj, const char *name,
-        const uint8_t *v);
-
-void cm_object_property_add_int16(Object *obj, const char *name,
-        const int16_t *v);
 
 /* ------------------------------------------------------------------------- */
 

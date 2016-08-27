@@ -382,13 +382,13 @@ static void nvic_writel(CortexMNVICState *s, uint32_t offset, uint32_t value)
             cortexm_nvic_set_pending(s, ARMV7M_EXCP_PENDSV);
         } else if (value & (1 << 27)) {
             s->gic.irq_state[ARMV7M_EXCP_PENDSV].pending = 0;
-            gic_update(&s->gic);
+            gic_update_v7m(&s->gic);
         }
         if (value & (1 << 26)) {
             cortexm_nvic_set_pending(s, ARMV7M_EXCP_SYSTICK);
         } else if (value & (1 << 25)) {
             s->gic.irq_state[ARMV7M_EXCP_SYSTICK].pending = 0;
-            gic_update(&s->gic);
+            gic_update_v7m(&s->gic);
         }
         break;
     case 0xd08: /* Vector Table Offset.  */
@@ -516,7 +516,7 @@ static void nvic_sysreg_write(void *opaque, hwaddr addr, uint64_t value,
             s->gic.priority1[(offset - 0xd14) + i][0] = (value >> (i * 8))
                     & 0xff;
         }
-        gic_update(&s->gic);
+    gic_update_v7m(&s->gic);
         return;
     }
     if (size == 4) {

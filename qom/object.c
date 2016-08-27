@@ -310,9 +310,7 @@ static void type_initialize(TypeImpl *ti)
                 continue;
             }
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
             g_assert(t);
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
             type_initialize_interface(ti, t, t);
         }
@@ -493,7 +491,6 @@ Object *object_new(const char *typename)
 
     return object_new_with_type(ti);
 }
-
 
 Object *object_new_with_props(const char *typename,
                               Object *parent,
@@ -2183,6 +2180,82 @@ void object_class_property_add_uint64_ptr(ObjectClass *klass, const char *name,
     object_class_property_add(klass, name, "uint64", property_get_uint64_ptr,
                               NULL, NULL, (void *)v, errp);
 }
+
+Object *object_get_parent(Object *obj)
+{
+    return obj->parent;
+}
+
+/**
+ * Return true if the node is of given type. Go up the class hierarchy.
+ */
+bool object_is_instance_of_typename(Object *obj, const char *type_name)
+{
+    ObjectClass *klass = object_get_class(obj);
+    for (; klass;) {
+        const char *name = object_class_get_name(klass);
+
+        if (strcmp(type_name, name) == 0) {
+            return true;
+        }
+        klass = object_class_get_parent(klass);
+    }
+
+    return false;
+}
+
+typedef struct {
+    Object *parent;
+    Object *child;
+    const char *name;
+} GetChildByNameTmp;
+
+static int object_get_child_by_name_foreach(Object *child, void *opaque)
+{
+    GetChildByNameTmp *p = (GetChildByNameTmp*) opaque;
+
+    p->child = object_resolve_path_component(p->parent, p->name);
+    if (p->child) {
+        return 1;
+    }
+    return 0;
+}
+
+
+Object *object_get_child_by_name(Object *obj, const char *name)
+{
+    GetChildByNameTmp tmp;
+    tmp.parent = obj;
+    tmp.name = name;
+    tmp.child = NULL;
+    int ret = object_child_foreach(obj, object_get_child_by_name_foreach,
+            (void *) &tmp);
+    if (ret == 0) {
+        error_report("Unable to find child %s", name);
+        exit(1);
+    }
+
+    return tmp.child;
+}
+
+/**
+ *  Realize object. Errors are fatal.
+ *  Similar to qdev_init_nofail(), but with a less-confusing name, since
+ *  qdev_init_nofail not only that it does not call init(), but realize(),
+ *  and it may fail, and when it does it exits.
+ */
+void object_realize(Object *obj)
+{
+    Error *err = NULL;
+
+    object_property_set_bool(obj, true, "realized", &err);
+    if (err) {
+        error_report("Realization of object %s failed: %s",
+                object_get_typename(obj), error_get_pretty(err));
+        exit(1);
+    }
+}
+
 
 typedef struct {
     Object *target_obj;

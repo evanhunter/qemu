@@ -118,3 +118,6 @@ docker-src.*
 common.env
 .project
 *.orig
+/build
+/cortexm-softmmu
+.cproject

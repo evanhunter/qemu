@@ -17,10 +17,8 @@
 #include "exec/semihost.h"
 #include "sysemu/kvm.h"
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 #include "hw/intc/gic_internal.h"
 #include "hw/cortexm/cortexm-nvic.h"
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
 #define ARM_CPU_FREQ 1000000000 /* FIXME: 1 GHz, should be configurable */
 
@@ -5976,13 +5974,11 @@ static void do_v7m_exception_exit(CPUARMState *env)
        pointer.  */
 }
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 void arm_v6m_cpu_do_interrupt(CPUState *cs)
 {
     /* TODO: Rewrite for v6m */
     return arm_v7m_cpu_do_interrupt(cs);
 }
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
 static void arm_log_exception(int idx)
 {
@@ -6036,7 +6032,6 @@ void arm_v7m_cpu_do_interrupt(CPUState *cs)
         return;
     case EXCP_BKPT:
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
         /*
          * The Breakpoint (BKPT) instruction provides for software
          * breakpoints. It can generate a DebugMonitor exception or
@@ -6070,7 +6065,6 @@ void arm_v7m_cpu_do_interrupt(CPUState *cs)
          * priority is lower than or equal to the execution priority.
          * The exception escalates to a HardFault.
          */
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
         if (semihosting_enabled()) {
             int nr;
@@ -6085,14 +6079,12 @@ void arm_v7m_cpu_do_interrupt(CPUState *cs)
             }
         }
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
         CortexMNVICState* nvic = CORTEXM_NVIC_STATE(env->nvic);
         // Check DHCSR.C_DEBUGEN
         if (nvic->dcb.dhcsr & 1) {
             cpu_interrupt(cs, CPU_INTERRUPT_DEBUG);
             return;
         }
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
         armv7m_nvic_set_pending(env->nvic, ARMV7M_EXCP_DEBUG);
         return;
@@ -8293,39 +8285,22 @@ void HELPER(v7m_msr)(CPUARMState *env, uint32_t reg, uint32_t val)
 
     case 17: /* BASEPRI */
         env->v7m.basepri = val & 0xff;
-
- #if defined(CONFIG_GNU_ARM_ECLIPSE)
-
+ 
         void* nvic = env->nvic;
         GICState* gic = ARM_GIC_COMMON(nvic);
-        gic_update(gic);
-
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
+        gic_update_v7m(gic);
         break;
 
     case 18: /* BASEPRI_MAX */
         val &= 0xff;
-
- #if defined(CONFIG_GNU_ARM_ECLIPSE)
-
         if (val != 0 && (val < env->v7m.basepri || env->v7m.basepri == 0)) {
             env->v7m.basepri = val;
 
             void* nvic = env->nvic;
             GICState* gic = ARM_GIC_COMMON(nvic);
-            gic_update(gic);
+            gic_update_v7m(gic);
         }
-
-#else
-
-        if (val != 0 && (val < env->v7m.basepri || env->v7m.basepri == 0))
-            env->v7m.basepri = val;
-
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
         break;
-
     case 19: /* FAULTMASK */
         if (val & 1) {
             env->daif |= PSTATE_F;

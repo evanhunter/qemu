@@ -1146,6 +1146,33 @@ void device_reset(DeviceState *dev)
     }
 }
 
+/**
+ * Call the parent reset() of a given type.
+ */
+void device_parent_reset(DeviceState *dev, const char *type_name)
+{
+    /* Identify parent class. */
+    DeviceClass *klass = DEVICE_CLASS(
+            object_class_get_parent(object_class_by_name(type_name)));
+
+    if (klass->reset) {
+        klass->reset(dev);
+    }
+}
+
+/**
+ * Call the reset() of a given type.
+ */
+void device_by_name_reset(DeviceState *dev, const char *type_name)
+{
+    /* Identify class. */
+    DeviceClass *klass = DEVICE_CLASS(object_class_by_name(type_name));
+
+    if (klass->reset) {
+        klass->reset(dev);
+    }
+}
+
 Object *qdev_get_machine(void)
 {
     static Object *dev;

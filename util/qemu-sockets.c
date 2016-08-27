@@ -15,9 +15,6 @@
  * Contributions after 2012-01-13 are licensed under the terms of the
  * GNU GPL, version 2 or (at your option) any later version.
  */
-
-#include "config-host.h"
-
 #include "qemu/osdep.h"
 
 #include "monitor/monitor.h"

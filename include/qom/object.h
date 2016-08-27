@@ -1614,4 +1614,11 @@ Object *container_get(Object *root, const char *path);
  * Returns the instance_size of the given @typename.
  */
 size_t object_type_get_instance_size(const char *typename);
+
+
+Object *object_get_parent(Object *obj);
+bool object_is_instance_of_typename(Object *obj, const char *type_name);
+Object *object_get_child_by_name(Object *obj, const char *name);
+void object_realize(Object *obj);
+
 #endif

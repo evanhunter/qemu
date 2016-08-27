@@ -3157,77 +3157,6 @@ static int tcp_chr_add_client(CharDriverState *chr, int fd)
     return ret;
 }
 
-#if 0
-static gboolean tcp_chr_accept(GIOChannel *channel, GIOCondition cond, void *opaque)
-{
-    CharDriverState *chr = opaque;
-    TCPCharDriver *s = chr->opaque;
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
-    struct sockaddr_in6 saddr;
-#else
-    struct sockaddr_in saddr;
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
-#ifndef _WIN32
-    struct sockaddr_un uaddr;
-#endif
-    struct sockaddr *addr;
-    socklen_t len;
-    int fd;
-
-#if defined(CONFIG_VERBOSE)
-    char str[INET6_ADDRSTRLEN];
-#endif /* defined(CONFIG_VERBOSE) */
-
-    for(;;) {
-#ifndef _WIN32
-	if (s->is_unix) {
-	    len = sizeof(uaddr);
-	    addr = (struct sockaddr *)&uaddr;
-	} else
-#endif
-	{
-	    len = sizeof(saddr);
-	    addr = (struct sockaddr *)&saddr;
-	}
-        fd = qemu_accept(s->listen_fd, addr, &len);
-        if (fd < 0 && errno != EINTR) {
-            s->listen_tag = 0;
-            return FALSE;
-        } else if (fd >= 0) {
-            if (s->do_telnetopt)
-                tcp_chr_telnet_init(fd);
-            break;
-        }
-    }
-    
-#if defined(CONFIG_VERBOSE)
-    if (verbosity_level >= VERBOSITY_COMMON) {
-        str[0] = '\0';
-        if (addr->sa_family == AF_INET) {
-            strcpy(str, inet_ntoa(((struct sockaddr_in*)addr)->sin_addr));
-        } else if (addr->sa_family == AF_INET6) {
-#if defined(__MINGW32__)
-            strcpy(str, "ipv6 host");
-#else
-            inet_ntop(AF_INET6, &saddr.sin6_addr, str, sizeof(str));
-#endif
-        }
-        
-        if (strlen(str) > 0) {
-            printf("... connection accepted from %s.\n\n", str);
-        }
-    }
-#endif
-    
-    if (tcp_chr_add_client(chr, fd) < 0)
-	close(fd);
-
-    return TRUE;
-}
-#endif
-
 static gboolean tcp_chr_accept(QIOChannel *channel,
                                GIOCondition cond,
                                void *opaque)
@@ -3238,7 +3167,6 @@ static gboolean tcp_chr_accept(QIOChannel *channel,
     sioc = qio_channel_socket_accept(QIO_CHANNEL_SOCKET(channel),
                                      NULL);
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 
 #if defined(CONFIG_VERBOSE)
 
@@ -3262,7 +3190,6 @@ static gboolean tcp_chr_accept(QIOChannel *channel,
 
 #endif /* defined(CONFIG_VERBOSE) */
 
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
     if (!sioc) {
         return TRUE;

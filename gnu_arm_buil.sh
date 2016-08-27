@@ -1,0 +1,22 @@
+--enable-debug
+--disable-gtk
+--disable-vnc
+--enable-sdl
+--disable-cocoa
+--disable-xen
+--audio-drv-list=
+--disable-blobs
+--disable-vhdx
+--disable-uuid
+--disable-curses
+--disable-curl
+--disable-tpm
+--disable-tools
+--disable-guest-agent
+--disable-bzip2
+--disable-libusb
+--disable-kvm
+--enable-trace-backends=log
+--enable-semihosting-native
+--enable-verbose
+--with-branding-message="GNU ARM Eclipse"

@@ -21,9 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#include "config-host.h"
-
 #include "qemu/osdep.h"
 #include "trace.h"
 #include "block/block_int.h"

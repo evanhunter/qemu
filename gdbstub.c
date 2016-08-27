@@ -368,6 +368,7 @@ int use_gdb_syscalls(void)
         /* -semihosting-config target=gdb */
         return true;
     }
+
     /* -semihosting-config target=auto */
     /* On the first call check if gdb is connected and remember. */
     if (gdb_syscall_mode == GDB_SYS_UNKNOWN) {
@@ -1254,11 +1255,9 @@ static void gdb_vm_state_change(void *opaque, int running, RunState state)
     const char *type;
     int ret;
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 #if defined(DEBUG_GDB)
     printf("vm_state %d, %d\n", running, state);
 #endif
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
     if (running || s->state == RS_INACTIVE) {
         return;
@@ -1507,9 +1506,7 @@ void gdb_exit(CPUArchState *env, int code)
   qemu_chr_delete(s->chr);
 #endif
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
   gdbserver_state = NULL;
-#endif
 }
 
 #ifdef CONFIG_USER_ONLY
@@ -1807,9 +1804,7 @@ int gdbserver_start(const char *device)
 }
 #endif
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 int gdbserver_is_started(void)
 {
     return (gdbserver_state != NULL);
 }
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */

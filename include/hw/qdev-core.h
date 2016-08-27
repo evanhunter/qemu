@@ -376,6 +376,16 @@ void qdev_machine_init(void);
  */
 void device_reset(DeviceState *dev);
 
+/**
+ * Call the parent reset() of a given type.
+ */
+void device_parent_reset(DeviceState *dev, const char *type_name);
+
+/**
+ * Call the reset() of a given type.
+ */
+void device_by_name_reset(DeviceState *dev, const char *type_name);
+
 const struct VMStateDescription *qdev_get_vmsd(DeviceState *dev);
 
 const char *qdev_fw_name(DeviceState *dev);

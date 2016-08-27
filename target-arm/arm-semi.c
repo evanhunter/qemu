@@ -18,8 +18,6 @@
  *  along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config-host.h"
-
 #include "qemu/osdep.h"
 
 #include "cpu.h"
@@ -33,13 +31,6 @@
 #include "exec/gdbstub.h"
 #include "hw/arm/arm.h"
 #include "qemu/cutils.h"
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
-#include "qemu/option.h"
-#include "qemu/config-file.h"
-#include "sysemu/sysemu.h"
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
 #endif
 
 #if defined(CONFIG_VERBOSE)
@@ -293,14 +284,8 @@ target_ulong do_arm_semihosting(CPUARMState *env)
             return (uint32_t)-1;
         }
         if (strcmp(s, ":tt") == 0) {
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
             /* Mode is 0="r" for stdin, 4="w" for stdout, 8="a" for stderr */
             int result_fileno = arg1 < 4 ? STDIN_FILENO : (arg1 < 8 ? STDOUT_FILENO : STDERR_FILENO);
-#else
-            int result_fileno = arg1 < 4 ? STDIN_FILENO : STDOUT_FILENO;
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
             unlock_user(s, arg0, 0);
             return result_fileno;
         }
@@ -518,7 +503,6 @@ target_ulong do_arm_semihosting(CPUARMState *env)
             GET_ARG(0);
             GET_ARG(1);
             input_size = arg1;
-
             /* Compute the size of the output string.  */
 #if !defined(CONFIG_USER_ONLY)
             cmdline = semihosting_get_cmdline();

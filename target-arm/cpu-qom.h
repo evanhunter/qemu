@@ -68,9 +68,7 @@ void register_cp_regs_for_features(ARMCPU *cpu);
 void init_cpreg_list(ARMCPU *cpu);
 
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 void arm_v6m_cpu_do_interrupt(CPUState *cpu);
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
 /* Callback functions for the generic timer's timers. */
 void arm_gt_ptimer_cb(void *opaque);

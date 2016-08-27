@@ -43,10 +43,7 @@ static inline bool qemu_log_separate(void)
 #define CPU_LOG_PAGE       (1 << 14)
 #define LOG_TRACE          (1 << 15)
 #define CPU_LOG_TB_OP_IND  (1 << 16)
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
-#define LOG_TRACE_MR       (1 << 16)
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
+#define LOG_TRACE_MR       (1 << 17)
 
 /* Returns true if a bit is set in the current loglevel mask
  */
@@ -126,9 +123,7 @@ void qemu_log_flush(void);
 /* Close the log file */
 void qemu_log_close(void);
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 #define qemu_log_function_name() \
     qemu_log_mask(LOG_TRACE, "%s()\n", __FUNCTION__)
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
 #endif

@@ -122,10 +122,8 @@ int main(int argc, char **argv)
 #include "sysemu/replay.h"
 #include "qapi/qmp/qerror.h"
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
 #include <strings.h>
 #include "hw/cortexm/cortexm-helper.h"
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
 #if defined(CONFIG_VERBOSE)
 #include "verbosity.h"
@@ -138,12 +136,6 @@ static const char *data_dir[16];
 static int data_dir_idx;
 const char *bios_name = NULL;
 enum vga_retrace_method vga_retrace_method = VGA_RETRACE_DUMB;
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
-DisplayType display_type = DT_NONE;
-#else
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
 int request_opengl = -1;
 int display_opengl;
 const char* keyboard_layout = NULL;
@@ -154,9 +146,9 @@ bool enable_mlock = false;
 int nb_nics;
 NICInfo nd_table[MAX_NICS];
 int autostart;
+int with_gdb;
 
 #if defined(CONFIG_GNU_ARM_ECLIPSE)
-int with_gdb;
 const char *mcu_device = NULL;
 #endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
 
@@ -3145,11 +3137,11 @@ int main(int argc, char **argv, char **envp)
     Error *main_loop_err = NULL;
     Error *err = NULL;
     bool list_data_dirs = false;
+    with_gdb = false;
 
 #if defined(CONFIG_GNU_ARM_ECLIPSE)
     const char *image_filename = NULL;
     int actual_argc = argc;
-    with_gdb = false;
 
     /* Most emulated applications need semihosting, so start with it enabled. */
     semihosting.enabled = true;
@@ -3592,19 +3584,11 @@ int main(int argc, char **argv, char **envp)
                 break;
             case QEMU_OPTION_s:
                 add_device_config(DEV_GDB, "tcp::" DEFAULT_GDBSTUB_PORT);
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
                 with_gdb = true;
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
                 break;
             case QEMU_OPTION_gdb:
                 add_device_config(DEV_GDB, optarg);
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
                 with_gdb = true;
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
                 break;
             case QEMU_OPTION_L:
                 if (is_help_option(optarg)) {

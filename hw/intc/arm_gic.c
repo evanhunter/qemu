@@ -29,15 +29,8 @@
 //#define DEBUG_GIC
 
 #ifdef DEBUG_GIC
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
-#define DPRINTF(fmt, ...) \
-do { fprintf(stdout, "arm_gic: " fmt , ## __VA_ARGS__); } while (0)
-#else
 #define DPRINTF(fmt, ...) \
 do { fprintf(stderr, "arm_gic: " fmt , ## __VA_ARGS__); } while (0)
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
 #else
 #define DPRINTF(fmt, ...) do {} while(0)
 #endif
@@ -95,8 +88,73 @@ void gic_update(GICState *s)
         for (irq = 0; irq < s->num_irq; irq++) {
             if (GIC_TEST_ENABLED(irq, cm) && gic_test_pending(s, irq, cm) &&
                 (irq < GIC_INTERNAL || GIC_TARGET(irq) & cm)) {
+                if (GIC_GET_PRIORITY(irq, cpu) < best_prio) {
+                    best_prio = GIC_GET_PRIORITY(irq, cpu);
+                    best_irq = irq;
+                }
+            }
+        }
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
+        if (best_irq != 1023) {
+            trace_gic_update_bestirq(cpu, best_irq, best_prio,
+                s->priority_mask[cpu], s->running_priority[cpu]);
+        }
+
+        irq_level = fiq_level = 0;
+
+        if (best_prio < s->priority_mask[cpu]) {
+            s->current_pending[cpu] = best_irq;
+            if (best_prio < s->running_priority[cpu]) {
+                int group = GIC_TEST_GROUP(best_irq, cm);
+
+                if (extract32(s->ctlr, group, 1) &&
+                    extract32(s->cpu_ctlr[cpu], group, 1)) {
+                    if (group == 0 && s->cpu_ctlr[cpu] & GICC_CTLR_FIQ_EN) {
+                        DPRINTF("Raised pending FIQ %d (cpu %d)\n",
+                                best_irq, cpu);
+                        fiq_level = 1;
+                        trace_gic_update_set_irq(cpu, "fiq", fiq_level);
+                    } else {
+                        DPRINTF("Raised pending IRQ %d (cpu %d)\n",
+                                best_irq, cpu);
+                        irq_level = 1;
+                        trace_gic_update_set_irq(cpu, "irq", irq_level);
+                    }
+                }
+            }
+        }
+
+        qemu_set_irq(s->parent_irq[cpu], irq_level);
+        qemu_set_irq(s->parent_fiq[cpu], fiq_level);
+    }
+}
+
+/* TODO: Many places that call this routine could be optimized.  */
+/* Update interrupt status after enabled or pending bits have been changed.  */
+void gic_update_v7m(GICState *s)
+{
+    int best_irq;
+    int best_prio;
+    int irq;
+    int irq_level, fiq_level;
+    int cpu;
+    int cm;
+
+    for (cpu = 0; cpu < s->num_cpu; cpu++) {
+        cm = 1 << cpu;
+        s->current_pending[cpu] = 1023;
+        if (!(s->ctlr & (GICD_CTLR_EN_GRP0 | GICD_CTLR_EN_GRP1))
+            || !(s->cpu_ctlr[cpu] & (GICC_CTLR_EN_GRP0 | GICC_CTLR_EN_GRP1))) {
+            qemu_irq_lower(s->parent_irq[cpu]);
+            qemu_irq_lower(s->parent_fiq[cpu]);
+            continue;
+        }
+        best_prio = 0x100;
+        best_irq = 1023;
+        for (irq = 0; irq < s->num_irq; irq++) {
+            if (GIC_TEST_ENABLED(irq, cm) && gic_test_pending(s, irq, cm) &&
+                (irq < GIC_INTERNAL || GIC_TARGET(irq) & cm)) {
+
                 int prio = GIC_GET_PRIORITY(irq, cpu);
                 uint32_t basepri = *(s->basepri_ptr);
                 if ((basepri == 0) || (prio <= basepri)) {
@@ -105,12 +163,6 @@ void gic_update(GICState *s)
                         best_irq = irq;
                     }
                 }
-#else
-                if (GIC_GET_PRIORITY(irq, cpu) < best_prio) {
-                    best_prio = GIC_GET_PRIORITY(irq, cpu);
-                    best_irq = irq;
-                }
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
             }
         }
 
@@ -968,10 +1020,8 @@ static void gic_dist_writeb(void *opaque, hwaddr offset,
 
                 GIC_SET_PENDING(irq + i, GIC_TARGET(irq + i));
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
                 DPRINTF("GIC_SET_PENDING s->irq_state[%d].pending is %d\n",
                         irq + i, s->irq_state[irq + i].pending);
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
             }
         }
     } else if (offset < 0x300) {

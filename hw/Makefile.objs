@@ -33,11 +33,8 @@ devices-dirs-$(CONFIG_SOFTMMU) += watchdog/
 devices-dirs-$(CONFIG_SOFTMMU) += xen/
 devices-dirs-$(CONFIG_MEM_HOTPLUG) += mem/
 devices-dirs-$(CONFIG_SMBIOS) += smbios/
+obj-$(CONFIG_CORTEXM) += cortexm/
+$(info CONFIG_CORTEXM=$(CONFIG_CORTEXM))
 devices-dirs-y += core/
-
-# [GNU ARM Eclipse]
-devices-dirs-$(CONFIG_GNU_ARM_ECLIPSE) += cortexm/
-# [GNU ARM Eclipse]
-
 common-obj-y += $(devices-dirs-y)
 obj-y += $(devices-dirs-y)

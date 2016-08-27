@@ -20,11 +20,11 @@ if ! pacman -Q  $package_list > /dev/null; then
   exit 1
 fi
 
-echo "Configuring..."
-mkdir -p build
+#echo "Configuring..."
+#mkdir -p build
 cd build
-CC=/usr/bin/gcc ../configure --python=/usr/bin/python2 2>&1 | tee build.log
+#CC=/usr/bin/gcc ../configure --python=/usr/bin/python2 2>&1 | tee build.log
 
 echo "Building..."
-(( make 2>&1 | tee -a build.log ) && echo "Done") || echo "Failed"
+(( make -j6 2>&1 | tee -a build.log ) && echo "Done") || echo "Failed"
 

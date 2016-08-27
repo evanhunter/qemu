@@ -18,29 +18,6 @@
 #include "qapi/qmp-input-visitor.h"
 #include "qapi/qmp-output-visitor.h"
 
-#if defined(CONFIG_GNU_ARM_ECLIPSE)
-#include "qapi/qmp/types.h"
-#include "qemu/log.h"
-#endif /* defined(CONFIG_GNU_ARM_ECLIPSE) */
-
-#if defined(CONFIG_GNU_ARM_ECLIPSE__)
-static char *dump_value(QObject *value, char *buf, size_t siz)
-{
-    if (value->type->code == QTYPE_QINT) {
-        QInt *p = (QInt *) value;
-        snprintf(buf, siz, "%" PRId64, p->value);
-        return buf;
-    } else if (value->type->code == QTYPE_QSTRING) {
-        QString *p = (QString *) value;
-        return p->string;
-    } else if (value->type->code == QTYPE_QBOOL) {
-        QBool *p = (QBool *) value;
-        return (char*) (p->value ? "true" : "false");
-    }
-    return (char*) "?";
-}
-#endif
-
 void object_property_set_qobject(Object *obj, QObject *value,
                                  const char *name, Error **errp)
 {

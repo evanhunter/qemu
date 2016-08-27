@@ -287,6 +287,7 @@ static uint32_t nvic_readl(nvic_state *s, uint32_t offset)
         return 0x01111110;
     case 0xd70: /* ISAR4.  */
         return 0x01310102;
+    /* TODO: Implement debug registers.  */
     default:
         qemu_log_mask(LOG_GUEST_ERROR, "NVIC: Bad read offset 0x%x\n", offset);
         return 0;
@@ -338,13 +339,13 @@ static void nvic_writel(nvic_state *s, uint32_t offset, uint32_t value)
             armv7m_nvic_set_pending(s, ARMV7M_EXCP_PENDSV);
         } else if (value & (1 << 27)) {
             s->gic.irq_state[ARMV7M_EXCP_PENDSV].pending = 0;
-            gic_update(&s->gic);
+            gic_update_v7m(&s->gic);
         }
         if (value & (1 << 26)) {
             armv7m_nvic_set_pending(s, ARMV7M_EXCP_SYSTICK);
         } else if (value & (1 << 25)) {
             s->gic.irq_state[ARMV7M_EXCP_SYSTICK].pending = 0;
-            gic_update(&s->gic);
+            gic_update_v7m(&s->gic);
         }
         break;
     case 0xd08: /* Vector Table Offset.  */
@@ -441,7 +442,7 @@ static void nvic_sysreg_write(void *opaque, hwaddr addr,
             s->gic.priority1[(offset - 0xd14) + i][0] =
                 (value >> (i * 8)) & 0xff;
         }
-        gic_update(&s->gic);
+    	gic_update_v7m(&s->gic);
         return;
     }
     if (size == 4) {
